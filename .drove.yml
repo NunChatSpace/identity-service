@@ -1,0 +1,18 @@
+---
+kind: pipeline
+name: default
+
+steps:
+  - name: publish
+    image: plugins/docker
+    settings: 
+      username: 
+        from_secret: DOCKER_HUB_USERNAME
+      password:
+        from_secret: DOCKER_HUB_PASSWORD
+      repo: nunz9684/id-service
+      tag: latest
+    file: Dockerfile
+    when:
+      branch: [master]
+      event: [push]
