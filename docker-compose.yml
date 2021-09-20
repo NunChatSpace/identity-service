@@ -1,0 +1,29 @@
+version: "3.0"
+services:
+  # server:
+  #   build:
+  #    context: .
+  #   ports:
+  #    - 3000:3000
+  #   environment:
+  #    - DB_POOL_SIZE=10
+  #    - DATABASE__POSTGRES__HOST=db
+  #    - DATABASE__POSTGRES__USER=postgres
+  #    - DATABASE__POSTGRES__PASSWORD=postgres
+  #    - DATABASE__POSTGRES__NAME=id_service
+  #    - DATABASE__POSTGRES__PORT=5432
+  #    - DATABASE__LOG_LEVEL=3
+  #    - APP__DEBUG_MODE=true
+  #    - APP__PORT=3000
+  db:
+    image: postgres:12-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=id_service
+  adminer:
+    image: adminer
+    ports:
+    - 8080:8080
