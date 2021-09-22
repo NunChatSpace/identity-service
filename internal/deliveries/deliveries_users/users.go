@@ -1,10 +1,10 @@
 package deliveries_users
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/NunChatSpace/identity-service/internal/cryptography"
+	"github.com/NunChatSpace/identity-service/internal/deliveries"
 	"github.com/NunChatSpace/identity-service/internal/entities"
 	"github.com/NunChatSpace/identity-service/internal/response_wrapper"
 )
@@ -22,11 +22,7 @@ type UserRegisterModel struct {
 func Register(db entities.DB, model UserRegisterModel) (response_wrapper.Model, error) {
 	rolename, err := db.RoleName().Get("user")
 	if err != nil {
-		return response_wrapper.Model{
-			ErrorCode: http.StatusInternalServerError,
-			Data:      UserRegisterModel{},
-			Message:   "",
-		}, err
+		return deliveries.InternalError(UserRegisterModel{}, err)
 	}
 
 	cinfo := entities.ContactModel{
@@ -36,23 +32,13 @@ func Register(db entities.DB, model UserRegisterModel) (response_wrapper.Model, 
 	}
 	contact, err := db.Contact().Add(cinfo)
 	if err != nil {
-		return response_wrapper.Model{
-			ErrorCode: http.StatusInternalServerError,
-			Data:      UserRegisterModel{},
-			Message:   "",
-		}, err
+		return deliveries.InternalError(UserRegisterModel{}, err)
 	}
 
 	ep, err := cryptography.Encrypt(model.Password)
 	if err != nil {
-		return response_wrapper.Model{
-			ErrorCode: http.StatusInternalServerError,
-			Data:      UserRegisterModel{},
-			Message:   "",
-		}, err
+		return deliveries.InternalError(UserRegisterModel{}, err)
 	}
-
-	fmt.Println("encrypted password: ", ep)
 
 	uinfo := entities.UserModel{
 		FirstName:  model.FirstName,
@@ -65,11 +51,7 @@ func Register(db entities.DB, model UserRegisterModel) (response_wrapper.Model, 
 
 	_, err = db.User().Add(uinfo)
 	if err != nil {
-		return response_wrapper.Model{
-			ErrorCode: http.StatusInternalServerError,
-			Data:      UserRegisterModel{},
-			Message:   "",
-		}, err
+		return deliveries.InternalError(UserRegisterModel{}, err)
 	}
 
 	return response_wrapper.Model{

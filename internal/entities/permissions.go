@@ -12,7 +12,7 @@ type permissionDb struct {
 
 type PermissionInterface interface {
 	Add(info PermissionModel) (PermissionModel, error)
-	Get(uid string) (PermissionModel, error)
+	Get(uid []string) ([]PermissionModel, error)
 }
 
 type PermissionModel struct {
@@ -30,9 +30,9 @@ func (pdb permissionDb) Add(info PermissionModel) (PermissionModel, error) {
 	return info, tx.Error
 }
 
-func (pdb permissionDb) Get(uid string) (PermissionModel, error) {
-	permission := PermissionModel{}
-	pdb.gorm.First(&permission, "id = ?", uid)
+func (pdb permissionDb) Get(uid []string) ([]PermissionModel, error) {
+	permission := []PermissionModel{}
+	pdb.gorm.Find(&permission, "id IN ?", uid)
 
 	return permission, nil
 }

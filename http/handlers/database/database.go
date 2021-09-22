@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/NunChatSpace/identity-service/internal/entities"
 	"github.com/gin-gonic/gin"
@@ -23,7 +22,6 @@ func Handler(db entities.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), &dbContext{}, db)
 		c.Request = c.Request.WithContext(ctx)
-		fmt.Println("database.Handler")
 		c.Next()
 	}
 }

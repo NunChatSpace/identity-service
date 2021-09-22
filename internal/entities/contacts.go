@@ -12,7 +12,7 @@ type contactDb struct {
 
 type ContactInterface interface {
 	Add(info ContactModel) (ContactModel, error)
-	Get(uid string) (ContactModel, error)
+	Get(c ContactModel) (ContactModel, error)
 }
 
 type ContactModel struct {
@@ -32,9 +32,9 @@ func (cdb contactDb) Add(info ContactModel) (ContactModel, error) {
 	return info, tx.Error
 }
 
-func (cdb contactDb) Get(uid string) (ContactModel, error) {
+func (cdb contactDb) Get(c ContactModel) (ContactModel, error) {
 	contact := ContactModel{}
-	cdb.gorm.First(&contact, "id = ?", uid)
+	tx := cdb.gorm.Model(&c).First(&contact)
 
-	return contact, nil
+	return contact, tx.Error
 }

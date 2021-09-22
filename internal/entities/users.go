@@ -14,7 +14,7 @@ type userDb struct {
 
 type UserInterface interface {
 	Add(info UserModel) (UserModel, error)
-	Get(uid string) (UserModel, error)
+	Get(u UserModel) (UserModel, error)
 }
 
 type UserModel struct {
@@ -37,9 +37,9 @@ func (udb userDb) Add(info UserModel) (UserModel, error) {
 	return info, tx.Error
 }
 
-func (udb userDb) Get(uid string) (UserModel, error) {
+func (udb userDb) Get(u UserModel) (UserModel, error) {
 	user := UserModel{}
-	udb.gorm.First(&user, "id = ?", uid)
+	udb.gorm.Model(&u).First(&user)
 
 	return user, nil
 }

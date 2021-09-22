@@ -12,7 +12,7 @@ type roleDb struct {
 
 type RoleInterface interface {
 	Add(info RoleModel) (RoleModel, error)
-	Get(uid string) (RoleModel, error)
+	Get(roleNameID string) ([]RoleModel, error)
 }
 
 type RoleModel struct {
@@ -31,9 +31,9 @@ func (rdb roleDb) Add(info RoleModel) (RoleModel, error) {
 	return info, tx.Error
 }
 
-func (rdb roleDb) Get(uid string) (RoleModel, error) {
-	role := RoleModel{}
-	rdb.gorm.First(&role, "id = ?", uid)
+func (rdb roleDb) Get(roleNameID string) ([]RoleModel, error) {
+	roles := []RoleModel{}
+	rdb.gorm.Find(&roles, "role_name_id = ?", roleNameID)
 
-	return role, nil
+	return roles, nil
 }
