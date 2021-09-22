@@ -8,8 +8,8 @@ import (
 	"github.com/NunChatSpace/identity-service/internal/cryptography"
 	"github.com/NunChatSpace/identity-service/internal/deliveries"
 	"github.com/NunChatSpace/identity-service/internal/entities"
+	"github.com/NunChatSpace/identity-service/internal/jwt_token"
 	"github.com/NunChatSpace/identity-service/internal/response_wrapper"
-	"github.com/golang-jwt/jwt"
 )
 
 type TokenModel struct {
@@ -20,6 +20,10 @@ type TokenModel struct {
 type SignInModel struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type RefreshTokenModel struct {
+	Token string `json:"token"`
 }
 
 func GetToken(db entities.DB, model SignInModel) (response_wrapper.Model, error) {
@@ -40,11 +44,11 @@ func GetToken(db entities.DB, model SignInModel) (response_wrapper.Model, error)
 	}
 
 	perms := getPermissionNames(permission)
-	accessToken, err := createToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix())
+	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix())
 	if err != nil {
 		return deliveries.InternalError(TokenModel{}, err)
 	}
-	refreshToken, err := createToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix())
+	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix())
 	if err != nil {
 		return deliveries.InternalError(TokenModel{}, err)
 	}
@@ -59,19 +63,56 @@ func GetToken(db entities.DB, model SignInModel) (response_wrapper.Model, error)
 	}, nil
 }
 
-func createToken(um entities.UserModel, pm []string, typeStr string, exp int64) (string, error) {
-	atClaims := jwt.MapClaims{}
-	atClaims["user_id"] = um.ID
-	atClaims["permission"] = pm
-	atClaims["type"] = typeStr
-	atClaims["exp"] = exp
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	token, err := at.SignedString([]byte("ThisIsSecretKey@123456789asdfghb"))
+func RefreshToken(db entities.DB, token string) (response_wrapper.Model, error) {
+	rftoken, err := jwt_token.Decode(token)
 	if err != nil {
-		return "", err
+		return deliveries.Forbidden(nil, err)
 	}
 
-	return token, nil
+	if rftoken.Type != "refresh_access" {
+		return deliveries.Forbidden(nil, errors.New("invalid token type"))
+	}
+
+	um := entities.UserModel{
+		Model: entities.Model{
+			ID: rftoken.UserID,
+		},
+	}
+
+	user, err := db.User().Get(um)
+	if err != nil {
+		return deliveries.InternalError(TokenModel{}, err)
+	}
+
+	roles, err := db.Role().Get(user.RoleNameID)
+	if err != nil {
+		return deliveries.InternalError(TokenModel{}, err)
+	}
+
+	permission, err := db.Permission().Get(getPermissionIDs(roles))
+	if err != nil {
+		return deliveries.InternalError(TokenModel{}, err)
+	}
+
+	perms := getPermissionNames(permission)
+	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix())
+	if err != nil {
+		return deliveries.InternalError(TokenModel{}, err)
+	}
+
+	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix())
+	if err != nil {
+		return deliveries.InternalError(TokenModel{}, err)
+	}
+
+	return response_wrapper.Model{
+		ErrorCode: http.StatusOK,
+		Data: TokenModel{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
+		Message: "",
+	}, nil
 }
 
 func getUser(db entities.DB, model SignInModel) (response_wrapper.Model, error) {

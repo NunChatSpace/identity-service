@@ -14,6 +14,7 @@ func AddGroup(r *gin.Engine) {
 	tokensGroup := r.Group("/tokens")
 
 	tokensGroup.POST("/", getToken)
+	tokensGroup.POST("/refresh", refreshToken)
 }
 
 func getToken(c *gin.Context) {
@@ -32,6 +33,29 @@ func getToken(c *gin.Context) {
 	}
 
 	m, err := dt.GetToken(db, signinModel)
+	if err != nil {
+		response_wrapper.Resp(m.ErrorCode, m.Data, err.Error(), c)
+		return
+	}
+	response_wrapper.Resp(m.ErrorCode, m.Data, "", c)
+}
+
+func refreshToken(c *gin.Context) {
+	var rtm dt.RefreshTokenModel
+
+	err := json.NewDecoder(c.Request.Body).Decode(&rtm)
+	if err != nil {
+		response_wrapper.Resp(http.StatusInternalServerError, "", err.Error(), c)
+		return
+	}
+
+	db := database.FromContext(c.Request.Context())
+	if db == nil {
+		response_wrapper.Resp(http.StatusInternalServerError, "", "db does not exist", c)
+		return
+	}
+
+	m, err := dt.RefreshToken(db, rtm.Token)
 	if err != nil {
 		response_wrapper.Resp(m.ErrorCode, m.Data, err.Error(), c)
 		return
