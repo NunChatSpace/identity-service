@@ -1,14 +1,10 @@
 package entities
 
 import (
-	"context"
-
 	"gorm.io/gorm"
 )
 
-func (d Db) User(ctx context.Context) UserInterface {
-	d.gorm = d.gorm.WithContext(ctx)
-
+func (d Db) User() UserInterface {
 	return userDb(d)
 }
 
@@ -17,21 +13,31 @@ type userDb struct {
 }
 
 type UserInterface interface {
-	GetUser(uid string) (UserModel, error)
+	Add(info UserModel) (UserModel, error)
+	Get(uid string) (UserModel, error)
 }
 
 type UserModel struct {
-	gorm.Model
+	Model
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name"`
 	LastName   string `json:"last_name"`
 	ContactID  string `json:"contact_id"`
 	Password   string `json:"password"`
-	RoleID     string `json:"role_id"`
-	ConsentID  string `json:"consent_id"`
+	RoleNameID string `json:"role_name_id"`
 }
 
-func (udb userDb) GetUser(uid string) (UserModel, error) {
+func (UserModel) TableName() string {
+	return "users"
+}
+
+func (udb userDb) Add(info UserModel) (UserModel, error) {
+	tx := udb.gorm.Create(&info)
+
+	return info, tx.Error
+}
+
+func (udb userDb) Get(uid string) (UserModel, error) {
 	user := UserModel{}
 	udb.gorm.First(&user, "id = ?", uid)
 

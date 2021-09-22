@@ -8,10 +8,10 @@ CREATE TABLE "users" (
     "last_name"                 text NOT NULL,
     "contact_id"                text NOT NULL,
     "password"                  text,
-    "role_id"                   text,
+    "role_name_id"               text,
 
     PRIMARY KEY("id"),
-    CONSTRAINT "fk_users_roles" FOREIGN KEY("role_id") REFERENCES "roles" ("id"),
+    CONSTRAINT "fk_users_roles" FOREIGN KEY("role_name_id") REFERENCES "role_names" ("id"),
     CONSTRAINT "fk_users_contacts" FOREIGN KEY("contact_id")  REFERENCES "contacts" ("id")
 );
 CREATE INDEX "idx_users_deleted_at" ON "users" ("deleted_at");

@@ -11,7 +11,7 @@ func GetCmd() *cobra.Command {
 		Short: "Listen and serve",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			http.GetServer().Run()
+			http.GetServer().Run(":8000")
 		},
 	}
 }

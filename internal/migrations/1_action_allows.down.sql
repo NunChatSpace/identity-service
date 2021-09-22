@@ -1,1 +1,1 @@
-DROP TABLE "action_allow";
+DROP TABLE "action_allows";

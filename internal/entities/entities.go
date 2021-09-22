@@ -1,11 +1,28 @@
 package entities
 
 import (
-	"context"
+	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+type Model struct {
+	ID        string `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
+
+func (m *Model) BeforeCreate(tx *gorm.DB) error {
+	if m.ID == "" {
+		m.ID = strings.ToUpper(uuid.New().String())
+	}
+
+	return nil
+}
 
 type Db struct {
 	gorm *gorm.DB
@@ -21,7 +38,13 @@ func (d Db) Ping() error {
 }
 
 type DB interface {
-	User(ctx context.Context) UserInterface
+	ActionAllow() ActionAllowInterface
+	Consent() ConsentInterface
+	Contact() ContactInterface
+	Permission() PermissionInterface
+	Role() RoleInterface
+	RoleName() RoleNameInterface
+	User() UserInterface
 }
 
 func NewDB() (DB, error) {
