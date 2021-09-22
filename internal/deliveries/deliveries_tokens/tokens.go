@@ -9,7 +9,7 @@ import (
 	"github.com/NunChatSpace/identity-service/internal/deliveries"
 	"github.com/NunChatSpace/identity-service/internal/entities"
 	"github.com/NunChatSpace/identity-service/internal/response_wrapper"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 )
 
 type TokenModel struct {
