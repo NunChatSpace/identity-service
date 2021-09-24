@@ -18,5 +18,11 @@ func GetServer() *gin.Engine {
 	routes_users.AddGroup(router)
 	routes_tokens.AddGroup(router)
 
+	router.GET("/_healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Healthy",
+		})
+	})
+
 	return router
 }
