@@ -3,4 +3,4 @@ WORKDIR /app
 COPY . .
 
 RUN go mod tidy
-CMD ["go", "run", ",", "serve"]
+CMD ["go", "run", ".", "serve"]
