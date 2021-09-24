@@ -32,9 +32,9 @@ services:
     networks: 
     - id_services
   server:
-    # image: nunz9684/id-service
-    build:
-      context: .
+    image: nunz9684/id-service
+    # build:
+    #   context: .
     depends_on:
     - postgres
     ports:
