@@ -1,4 +1,4 @@
-version: "3.0"
+version: "3.3"
 services:
   # server:
   #   build:
@@ -15,7 +15,7 @@ services:
   #    - DATABASE__LOG_LEVEL=3
   #    - APP__DEBUG_MODE=true
   #    - APP__PORT=3000
-  db:
+  postgres:
     image: postgres:12-alpine
     ports:
       - 5432:5432
@@ -23,7 +23,25 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=id_service
+    networks:
+      - id_services
   adminer:
     image: adminer
     ports:
     - 8080:8080
+    networks: 
+    - id_services
+  server:
+    # image: nunz9684/id-service
+    build:
+      context: .
+    depends_on:
+    - db
+    ports:
+    - 8000:8000
+    restart: always
+    networks: 
+    - id_services
+
+networks:
+  id_services:

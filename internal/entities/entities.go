@@ -49,7 +49,8 @@ type DB interface {
 
 func NewDB() (DB, error) {
 	conn := postgres.Config{
-		DSN: "host=" + "localhost" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
+		DSN: "postgresql://postgres:postgres@postgres/id_service?sslmode=disable",
+		// DSN: "host=" + "'postgres'" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
 	}
 
 	db, err := gorm.Open(postgres.New(conn))
