@@ -36,10 +36,10 @@ services:
     build:
       context: .
     depends_on:
-    - db
+    - postgres
     ports:
     - 8000:8000
-    restart: always
+    # restart: always
     networks: 
     - id_services
 
