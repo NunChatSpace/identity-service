@@ -33,13 +33,10 @@ services:
     - id_services
   server:
     image: nunz9684/id-service
-    # build:
-    #   context: .
     depends_on:
     - postgres
     ports:
     - 8000:8000
-    # restart: always
     networks: 
     - id_services
 
