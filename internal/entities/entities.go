@@ -45,12 +45,13 @@ type DB interface {
 	Role() RoleInterface
 	RoleName() RoleNameInterface
 	User() UserInterface
+	VerifyCode() VerifyCodeInterface
 }
 
 func NewDB() (DB, error) {
 	conn := postgres.Config{
 		// DSN: "postgresql://postgres:postgres@postgres/id_service?sslmode=disable",
-		DSN: "host=" + "'postgres'" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
+		DSN: "host=" + "'localhost'" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
 	}
 
 	db, err := gorm.Open(postgres.New(conn))

@@ -8,16 +8,16 @@ import (
 
 func InternalError(model interface{}, err error) (response_wrapper.Model, error) {
 	return response_wrapper.Model{
-		ErrorCode: http.StatusInternalServerError,
-		Data:      model,
-		Message:   "",
+		StatusCode: http.StatusInternalServerError,
+		Data:       model,
+		Message:    "",
 	}, err
 }
 
 func Forbidden(model interface{}, err error) (response_wrapper.Model, error) {
 	return response_wrapper.Model{
-		ErrorCode: http.StatusInternalServerError,
-		Data:      model,
-		Message:   "",
+		StatusCode: http.StatusInternalServerError,
+		Data:       model,
+		Message:    "",
 	}, err
 }

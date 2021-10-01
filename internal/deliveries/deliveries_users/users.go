@@ -55,8 +55,8 @@ func Register(db entities.DB, model UserRegisterModel) (response_wrapper.Model, 
 	}
 
 	return response_wrapper.Model{
-		ErrorCode: http.StatusOK,
-		Data:      model,
-		Message:   "",
+		StatusCode: http.StatusOK,
+		Data:       model,
+		Message:    "",
 	}, nil
 }

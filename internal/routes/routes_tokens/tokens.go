@@ -3,6 +3,7 @@ package routes_tokens
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/NunChatSpace/identity-service/http/handlers/database"
 	dt "github.com/NunChatSpace/identity-service/internal/deliveries/deliveries_tokens"
@@ -15,6 +16,7 @@ func AddGroup(r *gin.Engine) {
 
 	tokensGroup.POST("/", getToken)
 	tokensGroup.POST("/refresh", refreshToken)
+	tokensGroup.GET("/intrspct", introspection)
 }
 
 func getToken(c *gin.Context) {
@@ -32,20 +34,15 @@ func getToken(c *gin.Context) {
 		return
 	}
 
-	m, err := dt.GetToken(db, signinModel)
-	if err != nil {
-		response_wrapper.Resp(m.ErrorCode, m.Data, err.Error(), c)
-		return
-	}
-	response_wrapper.Resp(m.ErrorCode, m.Data, "", c)
+	m := dt.GetToken(db, signinModel)
+	response_wrapper.Resp(m.StatusCode, m.Data, "", c)
 }
 
 func refreshToken(c *gin.Context) {
-	var rtm dt.RefreshTokenModel
+	auth := c.Request.Header["Authorization"]
 
-	err := json.NewDecoder(c.Request.Body).Decode(&rtm)
-	if err != nil {
-		response_wrapper.Resp(http.StatusInternalServerError, "", err.Error(), c)
+	if len(auth) == 0 {
+		response_wrapper.Resp(http.StatusForbidden, "", "unauthenticate", c)
 		return
 	}
 
@@ -55,10 +52,27 @@ func refreshToken(c *gin.Context) {
 		return
 	}
 
-	m, err := dt.RefreshToken(db, rtm.Token)
-	if err != nil {
-		response_wrapper.Resp(m.ErrorCode, m.Data, err.Error(), c)
+	token := strings.Split(auth[0], " ")[1]
+	m := dt.RefreshToken(db, token)
+	response_wrapper.Resp(m.StatusCode, m.Data, "", c)
+}
+
+func introspection(c *gin.Context) {
+	auth := c.Request.Header["Authorization"]
+
+	if len(auth) == 0 {
+		response_wrapper.Resp(http.StatusForbidden, "", "unauthenticate", c)
 		return
 	}
-	response_wrapper.Resp(m.ErrorCode, m.Data, "", c)
+
+	db := database.FromContext(c.Request.Context())
+	if db == nil {
+		response_wrapper.Resp(http.StatusInternalServerError, "", "db does not exist", c)
+		return
+	}
+
+	token := strings.Split(auth[0], " ")[1]
+	m := dt.IntrospectionToken(db, token)
+
+	response_wrapper.Resp(m.StatusCode, m.Data, "", c)
 }

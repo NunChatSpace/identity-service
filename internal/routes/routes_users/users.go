@@ -40,8 +40,8 @@ func register(c *gin.Context) {
 
 	m, err := du.Register(db, regisModel)
 	if err != nil {
-		response_wrapper.Resp(m.ErrorCode, m.Data, err.Error(), c)
+		response_wrapper.Resp(m.StatusCode, m.Data, err.Error(), c)
 		return
 	}
-	response_wrapper.Resp(m.ErrorCode, m.Data, "", c)
+	response_wrapper.Resp(m.StatusCode, m.Data, "", c)
 }

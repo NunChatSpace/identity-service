@@ -1,15 +1,15 @@
 package deliveries_tokens
 
 import (
-	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/NunChatSpace/identity-service/internal/cryptography"
-	"github.com/NunChatSpace/identity-service/internal/deliveries"
 	"github.com/NunChatSpace/identity-service/internal/entities"
 	"github.com/NunChatSpace/identity-service/internal/jwt_token"
 	"github.com/NunChatSpace/identity-service/internal/response_wrapper"
+	"github.com/google/uuid"
 )
 
 type TokenModel struct {
@@ -26,51 +26,90 @@ type RefreshTokenModel struct {
 	Token string `json:"token"`
 }
 
-func GetToken(db entities.DB, model SignInModel) (response_wrapper.Model, error) {
-	result, err := getUser(db, model)
-	if err != nil {
-		return result, err
+func GetToken(db entities.DB, model SignInModel) response_wrapper.Model {
+	result := getUser(db, model)
+	if result.StatusCode != http.StatusOK {
+		return result
 	}
 
 	user := result.Data.(entities.UserModel)
 	roles, err := db.Role().Get(user.RoleNameID)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	permission, err := db.Permission().Get(getPermissionIDs(roles))
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	perms := getPermissionNames(permission)
-	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix())
+	verifyCode := strings.ToUpper(uuid.New().String())
+	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix(), verifyCode)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
-	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix())
+	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix(), verifyCode)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
+	}
+
+	vcInfo := entities.VerifyCodeModel{
+		VerifyCode: verifyCode,
+		UserID:     user.ID,
+	}
+
+	_, err = db.VerifyCode().Add(vcInfo)
+	if err != nil {
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	return response_wrapper.Model{
-		ErrorCode: http.StatusOK,
+		StatusCode: http.StatusOK,
 		Data: TokenModel{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 		},
 		Message: "",
-	}, nil
+	}
 }
 
-func RefreshToken(db entities.DB, token string) (response_wrapper.Model, error) {
+func RefreshToken(db entities.DB, token string) response_wrapper.Model {
 	rftoken, err := jwt_token.Decode(token)
 	if err != nil {
-		return deliveries.Forbidden(nil, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	if rftoken.Type != "refresh_access" {
-		return deliveries.Forbidden(nil, errors.New("invalid token type"))
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Data:       TokenModel{},
+			Message:    "invalid token type",
+		}
 	}
 
 	um := entities.UserModel{
@@ -81,74 +120,164 @@ func RefreshToken(db entities.DB, token string) (response_wrapper.Model, error) 
 
 	user, err := db.User().Get(um)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	roles, err := db.Role().Get(user.RoleNameID)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	permission, err := db.Permission().Get(getPermissionIDs(roles))
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	perms := getPermissionNames(permission)
-	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix())
+	verifyCode := strings.ToUpper(uuid.New().String())
+	accessToken, err := jwt_token.CreateJWToken(user, perms, "user_access", time.Now().Add(time.Minute*15).Unix(), verifyCode)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
-	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix())
+	refreshToken, err := jwt_token.CreateJWToken(user, nil, "refresh_access", time.Now().Add(time.Minute*60).Unix(), verifyCode)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
+	}
+
+	vcInfo := entities.VerifyCodeModel{
+		VerifyCode: verifyCode,
+		UserID:     user.ID,
+	}
+
+	_, err = db.VerifyCode().Add(vcInfo)
+	if err != nil {
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Data:       TokenModel{},
+			Message:    err.Error(),
+		}
 	}
 
 	return response_wrapper.Model{
-		ErrorCode: http.StatusOK,
+		StatusCode: http.StatusOK,
 		Data: TokenModel{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 		},
 		Message: "",
-	}, nil
+	}
 }
 
-func getUser(db entities.DB, model SignInModel) (response_wrapper.Model, error) {
+func IntrospectionToken(db entities.DB, token string) response_wrapper.Model {
+	accessToken, err := jwt_token.Decode(token)
+	if err != nil {
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    err.Error(),
+		}
+	}
+
+	if accessToken.Type != "user_access" {
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    "invalid token type",
+		}
+	}
+
+	isValid, err := db.VerifyCode().IsValid(accessToken.UserID, accessToken.VerifyCode)
+	if err != nil {
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+		}
+	}
+
+	if !isValid {
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    "unauthenticate",
+		}
+	}
+
+	return response_wrapper.Model{
+		StatusCode: http.StatusAccepted,
+		Data:       accessToken,
+	}
+}
+
+func getUser(db entities.DB, model SignInModel) response_wrapper.Model {
 	contact, err := db.Contact().Get(entities.ContactModel{
 		Email: model.Email,
 	})
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+		}
 	}
 	if contact.ID == "" {
-		return deliveries.Forbidden(TokenModel{}, errors.New("user does not exist"))
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    "user does not exist",
+		}
 	}
 
 	user, err := db.User().Get(entities.UserModel{
 		ContactID: contact.ID,
 	})
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+		}
 	}
 	if user.ID == "" {
-		return deliveries.Forbidden(TokenModel{}, errors.New("user does not exist"))
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    "user does not exist",
+		}
 	}
 
 	dp, err := cryptography.Decrypt(user.Password)
 	if err != nil {
-		return deliveries.InternalError(TokenModel{}, err)
+		return response_wrapper.Model{
+			StatusCode: http.StatusInternalServerError,
+			Message:    err.Error(),
+		}
 	}
 	if dp != model.Password {
-		return deliveries.Forbidden(TokenModel{}, errors.New("invalid email or password"))
+		return response_wrapper.Model{
+			StatusCode: http.StatusForbidden,
+			Message:    "invalid email or password",
+		}
 	}
 
 	return response_wrapper.Model{
-		ErrorCode: http.StatusOK,
-		Data:      user,
-		Message:   "",
-	}, nil
+		StatusCode: http.StatusOK,
+		Data:       user,
+		Message:    "",
+	}
 }
 
 func getPermissionIDs(rs []entities.RoleModel) []string {

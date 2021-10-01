@@ -31,14 +31,14 @@ services:
     - 8080:8080
     networks: 
     - id_services
-  server:
-    image: nunz9684/id-service
-    depends_on:
-    - postgres
-    ports:
-    - 8000:8000
-    networks: 
-    - id_services
+  # server:
+  #   image: nunz9684/id-service
+  #   depends_on:
+  #   - postgres
+  #   ports:
+  #   - 8000:8000
+  #   networks: 
+  #   - id_services
 
 networks:
   id_services:
