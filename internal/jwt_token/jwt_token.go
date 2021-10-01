@@ -9,10 +9,10 @@ import (
 
 type TokenClaims struct {
 	jwt.StandardClaims
-	Permission string `json:"permission"`
-	Type       string `json:"type"`
-	UserID     string `json:"user_id"`
-	VerifyCode string `json:"verify_code"`
+	Permission []string `json:"permission"`
+	Type       string   `json:"type"`
+	UserID     string   `json:"user_id"`
+	VerifyCode string   `json:"verify_code"`
 }
 
 func CreateJWToken(um entities.UserModel, pm []string, typeStr string, exp int64, verifyCode string) (string, error) {
