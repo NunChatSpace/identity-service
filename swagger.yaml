@@ -4,8 +4,7 @@ info:
   description: APIs schema for Authentication
   version: 1.0.0
 servers:
-  - url: https://backend.aistrom.com/
-  - url: http://backend.aistrom.com/
+  - url: 'https://backend.aistrom.com/:8000'
 security:
   - basicAuth: []
   - bearerAuth: []
