@@ -10,6 +10,7 @@ import (
 func SetHandlers(db entities.DB) *gin.Engine {
 	router := gin.Default()
 
+	router.Static("/static", "./static")
 	router.Use(cors.Handler())
 	router.Use(database.Handler(db))
 

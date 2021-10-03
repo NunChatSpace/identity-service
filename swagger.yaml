@@ -1,154 +1,140 @@
-openapi: 3.0.0
+swagger: "2.0"
 info:
-  description: APIs schema for Authentication
-  version: 1.0.0
-  title: Authentication (GCP)
+  description: "APIs schema for Authentication"
+  version: "1.0.0"
+  title: "Authentication (GCP)"
+
+host: "backend.aistrom.com"
+
+schemes:
+  - "https"
+  - "http"
+
 security:
   - basicAuth: []
+
+securityDefinitions:
+  basicAuth:
+    type: basic
+
 paths:
   /tokens/:
     post:
       summary: Get access token
       description: ""
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SigninModel"
-        description: Signin information
-        required: true
+      parameters:
+        - in: body
+          name: "body"
+          description: "Signin information"
+          required: true
+          schema:
+            $ref: "#/definitions/SigninModel"
       responses:
-        "200":
-          description: success response
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/TokenSuccessResponse"
         "500":
-          description: internal server error
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "200":
+          description: "success response"
+          schema:
+            $ref: "#/definitions/TokenSuccessResponse"
   /tokens/refresh:
     post:
       summary: Refresh access token
       description: ""
       responses:
-        "200":
-          description: success
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/TokenSuccessResponse"
-        "403":
-          description: forbidden
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "500":
-          description: internal server error
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "403":
+          description: "forbidden"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "200":
+          description: "success"
+          schema:
+            $ref: "#/definitions/TokenSuccessResponse"
   /tokens/intrspct:
     post:
       summary: Decode token
       description: ""
       responses:
-        "202":
-          description: accept
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/IntrospectionSuccessResult"
-        "403":
-          description: forbidden
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "500":
-          description: internal server error
-          content:
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-servers:
-  - url: https://backend.aistrom.com
-  - url: http://backend.aistrom.com
-components:
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-  schemas:
-    TokenSuccessResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          properties:
-            access_token:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "403":
+          description: "forbidden"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "202":
+          description: "accept"
+          schema:
+            $ref: "#/definitions/IntrospectionSuccessResult"
+definitions:
+  TokenSuccessResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          access_token:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzMwNzUwMDYsInBlcm1pc3Npb24iOm51bGwsInR5cGUiOiJ1c2VyX2FjY2VzcyIsInVzZXJfaWQiOiIxNjNENzFGQy0yNTVDLTQ2MEQtQTEzMi1GRTQ3RDhFM0IyRUQifQ.SG1r3SfzuHI5-URyHI5Rjshl2SLBBEAuPdQqIjpn-TE"
+          refresh_token:
+             type: string
+             example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzMwNzUwMDYsInBlcm1pc3Npb24iOm51bGwsInR5cGUiOiJ1c2VyX2FjY2VzcyIsInVzZXJfaWQiOiIxNjNENzFGQy0yNTVDLTQ2MEQtQTEzMi1GRTQ3RDhFM0IyRUQifQ.SG1r3SfzuHI5-URyHI5Rjshl2SLBBEAuPdQqIjpn-TE"
+      message:
+        type: string
+        example: ""
+  ErrorResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          access_token:
+            type: string
+            example: ""
+          refresh_token:
+             type: string
+             example: ""
+      message:
+        type: string
+        example: "{error message}"
+  SigninModel:
+    type: object
+    properties:
+      Email:
+        type: string
+        example: "abc@abc.com"
+      Password:
+        type: string
+        example: "1234"
+  IntrospectionSuccessResult:
+    type: object
+    properties:
+      data: 
+        type: object
+        properties:
+          exp:
+            type: integer
+            example: 1633082822
+          permission:
+            type: array
+            items:
               type: string
-              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzMwNzUwMDYsInBlcm1pc3Npb24iOm51bGwsInR5cGUiOiJ1c2VyX2FjY2VzcyIsInVzZXJfaWQiOiIxNjNENzFGQy0yNTVDLTQ2MEQtQTEzMi1GRTQ3RDhFM0IyRUQifQ.SG1r3SfzuHI5-URyHI5Rjshl2SLBBEAuPdQqIjpn-TE
-            refresh_token:
-              type: string
-              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzMwNzUwMDYsInBlcm1pc3Npb24iOm51bGwsInR5cGUiOiJ1c2VyX2FjY2VzcyIsInVzZXJfaWQiOiIxNjNENzFGQy0yNTVDLTQ2MEQtQTEzMi1GRTQ3RDhFM0IyRUQifQ.SG1r3SfzuHI5-URyHI5Rjshl2SLBBEAuPdQqIjpn-TE
-        message:
-          type: string
-          example: ""
-    ErrorResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          properties:
-            access_token:
-              type: string
-              example: ""
-            refresh_token:
-              type: string
-              example: ""
-        message:
-          type: string
-          example: "{error message}"
-    SigninModel:
-      type: object
-      properties:
-        Email:
-          type: string
-          example: abc@abc.com
-        Password:
-          type: string
-          example: "1234"
-    IntrospectionSuccessResult:
-      type: object
-      properties:
-        data:
-          type: object
-          properties:
-            exp:
-              type: integer
-              example: 1633082822
-            permission:
-              type: array
-              items:
-                type: string
-                example:
-                  - get.users
-                  - post.users
-            type:
-              type: string
-              example: user_access
-            user_id:
-              type: string
-              example: DCB91C39-9AB2-49A6-A6AB-5A2C5C69DA08
-            verify_code:
-              type: string
-              example: 26B62860-13D5-4292-AEE3-F86F59C57D7D
-        message:
-          type: string
-          example: ""
+              example: ["get.users", "post.users"]
+          type:
+            type: string
+            example: "user_access"
+          user_id:
+            type: string
+            example: "DCB91C39-9AB2-49A6-A6AB-5A2C5C69DA08"
+          verify_code:
+            type: string
+            example: "26B62860-13D5-4292-AEE3-F86F59C57D7D"
+      message:
+        type: string
+        example: ""
