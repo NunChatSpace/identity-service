@@ -4,7 +4,7 @@ info:
   description: APIs schema for Authentication
   version: 1.0.0
 servers:
-  - url: 'https://backend.aistrom.com/:8000'
+  - url: 'https://backend.aistrom.com:8000'
 security:
   - basicAuth: []
   - bearerAuth: []
@@ -81,6 +81,37 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /users/:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Register user
+      requestBody:
+        description: Signin information
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/RegisterUserBody'
+        required: true
+      responses:
+        '200':
+          description: success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/IntrospectionSuccessResult'
+        '403':
+          description: forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     TokenSuccessResponse:
@@ -116,6 +147,30 @@ components:
         message:
           type: string
           example: ''
+    RegisterUserBody:
+      type: object
+      properties:
+        FirstName:
+          type: string
+          example: 'Albert'
+        MiddleName:
+          type: string
+          example: 'E.'
+        LastName:
+          type: string
+          example: 'Something'
+        Password:
+          type: string
+          example: '1234'
+        PhoneNumber:
+          type: string
+          example: '0811111111'
+        Email:
+          type: string
+          example: 'emal@email.com'
+        Address:
+          type: string
+          example: 'Poserdon 123 Rd.Ratchadaphisek Thailand'
     TokenSuccessResponse_data:
       type: object
       properties:

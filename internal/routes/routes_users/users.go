@@ -13,14 +13,7 @@ import (
 func AddGroup(r *gin.Engine) {
 	usersGroup := r.Group("/users")
 
-	usersGroup.GET("/", getUser)
 	usersGroup.POST("/", register)
-}
-
-func getUser(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"users": "nun",
-	})
 }
 
 func register(c *gin.Context) {
