@@ -54,7 +54,7 @@ func export() error {
 
 func createMigrate() (*migrate.Migrate, error) {
 	conn := postgres.Config{
-		DSN: "host=" + "'postgres'" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
+		DSN: "host=" + "'postgres'" + " user=" + "postgres" + " password=" + "postgres" + " dbname=" + "id_service_db" + " port=" + "5432" + " sslmode=disable TimeZone=" + "Asia/Manila",
 	}
 
 	db, err := gorm.Open(postgres.New(conn))
