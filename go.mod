@@ -3,8 +3,8 @@ module github.com/NunChatSpace/identity-service
 go 1.16
 
 require (
-	github.com/containerd/containerd v1.5.5 // indirect
-	github.com/docker/docker v20.10.8+incompatible // indirect
+	github.com/containerd/containerd v1.5.7 // indirect
+	github.com/docker/docker v20.10.9+incompatible // indirect
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
